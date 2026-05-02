@@ -27,8 +27,8 @@ export default function AdminLogin() {
       setError("Credenciales inválidas")
       setLoading(false)
     } else {
-      router.push("/admin")
-      router.refresh()
+      // Usar window.location para asegurar que la sesión se actualice correctamente
+      window.location.href = "/admin"
     }
   }
 
