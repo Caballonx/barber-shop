@@ -114,6 +114,17 @@ model PushSubscription {
   createdAt DateTime @default(now())
 }
 
+model ShopConfig {
+  id                String  @id @default("default")
+  shopName          String  @default("FADE Barbershop")
+  contactEmail      String  @default("contacto@fadebarbershop.com")
+  address           String  @default("Winston Churchill 1206, Piantini")
+  openingTime       String  @default("09:00")
+  closingTime       String  @default("20:00")
+  autoConfirm       Boolean @default(true)
+  updatedAt         DateTime @updatedAt
+}
+
 enum AppointmentStatus {
   PENDING
   CONFIRMED

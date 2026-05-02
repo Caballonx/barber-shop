@@ -1,67 +1,68 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
-import { startOfMonth, endOfMonth, eachDayOfInterval, format, startOfDay, endOfDay } from "date-fns"
-import { es } from "date-fns/locale"
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameDay } from "date-fns"
 
 export async function GET() {
   try {
     const now = new Date()
-    const monthStart = startOfMonth(now)
-    const monthEnd = endOfMonth(now)
+    const start = startOfMonth(now)
+    const end = endOfMonth(now)
 
-    // 1. Ingresos por día del mes actual
-    const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-    
+    // Obtener todas las citas completadas del mes actual
     const appointments = await prisma.appointment.findMany({
       where: {
+        status: "COMPLETED",
         date: {
-          gte: monthStart,
-          lte: monthEnd,
-        },
-        status: 'COMPLETED'
+          gte: start,
+          lte: end,
+        }
       },
-      include: { service: true }
-    })
-
-    const dailyRevenue = days.map(day => {
-      const dayStr = format(day, "dd")
-      const dayTotal = appointments
-        .filter(a => format(new Date(a.date), "yyyy-MM-dd") === format(day, "yyyy-MM-dd"))
-        .reduce((sum, a) => sum + (a.price || 0), 0)
-      
-      return {
-        name: dayStr,
-        ingresos: dayTotal
+      include: {
+        service: true
       }
     })
 
-    // 2. Ingresos por categoría de servicio
-    const categoryRevenueMap: Record<string, number> = {}
-    appointments.forEach(a => {
-      const cat = a.service.category || "Otros"
-      categoryRevenueMap[cat] = (categoryRevenueMap[cat] || 0) + (a.price || 0)
+    // 1. Total Mes Actual
+    const totalRevenue = appointments.reduce((sum, app) => sum + app.price, 0)
+    const completedCount = appointments.length
+
+    // 2. Ticket Promedio
+    const averageTicket = completedCount > 0 ? Math.round(totalRevenue / completedCount) : 0
+
+    // 3. Ingresos Diarios (para la gráfica)
+    const daysInMonth = eachDayOfInterval({ start, end })
+    const dailyRevenue = daysInMonth.map(day => {
+      const dayTotal = appointments
+        .filter(app => isSameDay(new Date(app.date), day))
+        .reduce((sum, app) => sum + app.price, 0)
+      
+      return {
+        date: format(day, "dd"),
+        amount: dayTotal
+      }
     })
 
-    const categoryRevenue = Object.entries(categoryRevenueMap).map(([name, value]) => ({
+    // 4. Por Categoría
+    const categoryMap: Record<string, number> = {}
+    appointments.forEach(app => {
+      const cat = app.service.category || "General"
+      categoryMap[cat] = (categoryMap[cat] || 0) + app.price
+    })
+    
+    const categoryRevenue = Object.entries(categoryMap).map(([name, value]) => ({
       name,
       value
     }))
 
-    // 3. Resumen general del mes
-    const totalMonth = appointments.reduce((sum, a) => sum + (a.price || 0), 0)
-    const avgTicket = appointments.length > 0 ? totalMonth / appointments.length : 0
-
     return NextResponse.json({
+      totalRevenue,
+      completedCount,
+      averageTicket,
       dailyRevenue,
-      categoryRevenue,
-      summary: {
-        totalMonth,
-        avgTicket,
-        count: appointments.length
-      }
+      categoryRevenue
     })
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Error fetching revenue data" }, { status: 500 })
+    console.error("Error fetching revenue data:", error)
+    return NextResponse.json({ error: "Error al obtener datos de ingresos" }, { status: 500 })
   }
 }
