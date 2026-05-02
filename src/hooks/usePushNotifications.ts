@@ -32,10 +32,20 @@ export function usePushNotifications() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      const response = await fetch('/api/notifications/subscribe', {
+      // Prepare payload to match /api/push/subscribe expected format
+      const subscriptionJSON = sub.toJSON();
+      const payload = {
+        endpoint: subscriptionJSON.endpoint,
+        keys: {
+          p256dh: subscriptionJSON.keys?.p256dh,
+          auth: subscriptionJSON.keys?.auth,
+        },
+      };
+
+      const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
