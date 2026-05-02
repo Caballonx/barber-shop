@@ -5,6 +5,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Calendar, Users, Scissors, DollarSign, Settings, LayoutDashboard, CreditCard, Menu, X } from "lucide-react"
 import { LogoutButton } from "@/components/ui/LogoutButton"
+import { useEffect } from "react"
+import { registerPushNotifications } from "@/lib/notifications/push-client"
 
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -20,6 +22,13 @@ const navItems = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+
+  useEffect(() => {
+    // Solo intentar registrar en el cliente (navegador)
+    if (typeof window !== "undefined") {
+      registerPushNotifications()
+    }
+  }, [])
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin"

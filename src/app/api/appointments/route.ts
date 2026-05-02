@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
 import { appointmentSchema } from "@/lib/validations/schemas"
 import { parse, addMinutes, format } from "date-fns"
+import { sendWhatsAppConfirmation } from "@/lib/notifications/whatsapp"
+import { sendPushToAdmins } from "@/lib/notifications/push"
 
 export async function POST(request: Request) {
   try {
@@ -79,6 +81,27 @@ export async function POST(request: Request) {
         price: service.price,
       }
     })
+
+    // 4. Notificar (No bloqueante)
+    const formattedDate = format(dateObj, "dd/MM/yyyy")
+    
+    // Notificación WhatsApp al cliente
+    sendWhatsAppConfirmation({
+      clientPhone: clientData.phone,
+      clientName: clientData.name,
+      barberName: barber.name,
+      serviceName: service.name,
+      date: formattedDate,
+      time: appointmentData.startTime,
+      price: service.price
+    })
+
+    // Notificación Push al admin
+    sendPushToAdmins(
+      "Nueva cita registrada 💈",
+      `${clientData.name} reservó ${service.name} con ${barber.name} para las ${appointmentData.startTime}`,
+      "/admin/appointments"
+    )
 
     return NextResponse.json(appointment, { status: 201 })
   } catch (error) {
