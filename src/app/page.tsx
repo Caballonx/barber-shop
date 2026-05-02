@@ -2,10 +2,12 @@ import Link from "next/link"
 import { Calendar, Phone, Clock, MapPin, ChevronRight, ShieldCheck, CheckCircle2, BellRing, Zap } from "lucide-react"
 import { BookingWidget } from "@/components/features/BookingWidget"
 import { HeroCarousel } from "@/components/ui/HeroCarousel"
+import { ScrollToTop } from "@/components/ui/ScrollToTop"
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       {/* NAVBAR */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#22c55e]/20">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
