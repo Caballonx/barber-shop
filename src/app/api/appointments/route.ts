@@ -79,6 +79,19 @@ export async function POST(request: Request) {
         price: service.price,
       }
     })
+    
+    // Notificar a los administradores
+    try {
+      const { notifyAdmins } = await import("@/lib/notifications")
+      await notifyAdmins({
+        title: "Nueva Cita",
+        body: `${clientData.name} ha reservado con ${barber.name} para ${service.name} a las ${appointmentData.startTime}`,
+        url: "/admin/appointments"
+      })
+    } catch (notifyError) {
+      console.error("Error al notificar administradores:", notifyError)
+      // No fallamos la creación de la cita si falla la notificación
+    }
 
     return NextResponse.json(appointment, { status: 201 })
   } catch (error) {

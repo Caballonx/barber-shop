@@ -40,3 +40,11 @@ export const appointmentSchema = z.object({
   price: z.number(),
   paymentMethod: z.string().optional(),
 })
+
+export const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string(),
+    auth: z.string(),
+  }),
+})

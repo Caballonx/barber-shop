@@ -113,3 +113,15 @@ enum AppointmentStatus {
   CANCELLED
   NO_SHOW
 }
+
+model PushSubscription {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String?  @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("push_subscriptions")
+}

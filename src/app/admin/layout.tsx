@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import Link from "next/link"
 import { Calendar, Users, Scissors, DollarSign, Settings, LayoutDashboard, CreditCard } from "lucide-react"
 import { LogoutButton } from "@/components/ui/LogoutButton"
+import { NotificationToggle } from "@/components/features/notifications/NotificationToggle"
 
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -39,7 +40,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             )
           })}
         </nav>
-        <div className="p-4 border-t border-[#22c55e]/20">
+        <div className="p-4 border-t border-[#22c55e]/20 space-y-3">
+          <NotificationToggle />
           <LogoutButton />
         </div>
       </aside>
