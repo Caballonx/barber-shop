@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FADE Barbershop - Admin & Landing
 
-## Getting Started
+Sistema integral para FADE Barbershop con Landing Page premium y Panel Administrativo.
 
-First, run the development server:
+## 🚀 Tecnologías
+- **Core**: Next.js 15 (App Router)
+- **Base de Datos**: Supabase (PostgreSQL) + Prisma ORM
+- **Autenticación**: NextAuth.js
+- **Estilos**: Tailwind CSS 4 + Shadcn UI
+- **Despliegue**: Vercel
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠️ Instalación y Configuración
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1.  **Clonar el repositorio**
+2.  **Instalar dependencias**: `npm install`
+3.  **Configurar Variables de Entorno**: Crea un archivo `.env.local` con:
+    ```env
+    DATABASE_URL="tu_url_de_supabase_con_pgbouncer"
+    DIRECT_URL="tu_url_de_supabase_directa"
+    NEXTAUTH_SECRET="tu_secreto"
+    NEXTAUTH_URL="http://localhost:3000"
+    ```
+4.  **Generar Cliente Prisma**: `npx prisma generate`
+5.  **Iniciar Servidor**: `npm run dev`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Credenciales del Panel
+- **URL**: `/admin`
+- **Usuario**: `admin@fade.com`
+- **Password**: `admin123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Despliegue en Vercel
+1.  Conecta tu repositorio de GitHub a Vercel.
+2.  Agrega las variables de entorno (`DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_SECRET`).
+3.  Establece `NEXTAUTH_URL` con el dominio de Vercel.
+4.  ¡Listo!
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Desarrollado con ❤️ para FADE Barbershop.
