@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  price        Int
+  duration     Int
+  category     String
+  imageUrl     String?
+  isActive     Boolean       @default(true)
+  order        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Barber {
+  id           String        @id @default(cuid())
+  name         String
+  specialty    String
+  bio          String?
+  photoUrl     String?
+  isActive     Boolean       @default(true)
+  workDays     String[]
+  startTime    String
+  endTime      String
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+  blockedSlots BlockedSlot[]
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  clientId      String
+  barberId      String
+  serviceId     String
+  date          DateTime
+  startTime     String
+  endTime       String
+  status        AppointmentStatus @default(PENDING)
+  notes         String?
+  price         Int
+  paymentMethod String?
+  createdAt     DateTime          @default(now())
+  barber        Barber            @relation(fields: [barberId], references: [id])
+  client        Client            @relation(fields: [clientId], references: [id])
+  service       Service           @relation(fields: [serviceId], references: [id])
+  revenues      Revenue[]
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  barberId  String
+  date      DateTime
+  startTime String
+  endTime   String
+  reason    String?
+  createdAt DateTime @default(now())
+  barber    Barber   @relation(fields: [barberId], references: [id])
+}
+
+model Revenue {
+  id            String      @id @default(cuid())
+  appointmentId String
+  amount        Int
+  date          DateTime
+  barberId      String
+  serviceId     String
+  paymentMethod String
+  createdAt     DateTime    @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  name     String
+  role     String
+}
+
+model Debt {
+  id          String   @id @default(cuid())
+  clientName  String
+  serviceName String
+  amount      Int
+  isPaid      Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
