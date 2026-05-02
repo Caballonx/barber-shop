@@ -1,22 +1,54 @@
 import { NextResponse } from "next/server"
-
-// Mock settings storage (in a real app this would be in a DB table 'Settings')
-let settings = {
-  shopName: "FADE Barbershop",
-  address: "Winston Churchill 1206, Piantini",
-  phone: "+1 (809) 555-3274",
-  email: "contacto@fadebarbershop.com",
-  openingHour: "09:00",
-  closingHour: "20:00",
-  allowAutomaticConfirmation: true
-}
+import { prisma } from "@/lib/db/prisma"
 
 export async function GET() {
-  return NextResponse.json(settings)
+  try {
+    let config = await prisma.shopConfig.findUnique({
+      where: { id: "default" }
+    })
+
+    if (!config) {
+      // Crear configuración inicial si no existe
+      config = await prisma.shopConfig.create({
+        data: { id: "default" }
+      })
+    }
+
+    return NextResponse.json(config)
+  } catch (error) {
+    console.error("Error fetching settings:", error)
+    return NextResponse.json({ error: "Error al obtener ajustes" }, { status: 500 })
+  }
 }
 
 export async function PATCH(request: Request) {
-  const body = await request.json()
-  settings = { ...settings, ...body }
-  return NextResponse.json(settings)
+  try {
+    const body = await request.json()
+    
+    const config = await prisma.shopConfig.upsert({
+      where: { id: "default" },
+      update: {
+        shopName: body.shopName,
+        contactEmail: body.contactEmail,
+        address: body.address,
+        openingTime: body.openingTime,
+        closingTime: body.closingTime,
+        autoConfirm: body.autoConfirm,
+      },
+      create: {
+        id: "default",
+        shopName: body.shopName,
+        contactEmail: body.contactEmail,
+        address: body.address,
+        openingTime: body.openingTime,
+        closingTime: body.closingTime,
+        autoConfirm: body.autoConfirm,
+      }
+    })
+
+    return NextResponse.json(config)
+  } catch (error) {
+    console.error("Error updating settings:", error)
+    return NextResponse.json({ error: "Error al actualizar ajustes" }, { status: 500 })
+  }
 }

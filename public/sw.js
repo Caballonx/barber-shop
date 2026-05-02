@@ -1,3 +1,6 @@
+// Service Worker para FADE Barbershop
+// Maneja notificaciones push y cache para PWA
+
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
@@ -6,12 +9,16 @@ self.addEventListener('push', (event) => {
     const title = data.title || 'FADE Barbershop 💈';
     const options = {
       body: data.body || 'Tienes una nueva notificación',
-      icon: '/icon-192x192.png',
-      badge: '/icon-192x192.png',
+      icon: data.icon || '/icon-192x192.png',
+      badge: data.badge || '/icon-192x192.png',
       vibrate: [100, 50, 100],
       data: {
         url: data.url || '/admin/appointments'
       },
+      actions: [
+        { action: "open", title: "Ver" },
+        { action: "close", title: "Cerrar" },
+      ],
     };
 
     event.waitUntil(self.registration.showNotification(title, options));
@@ -23,13 +30,15 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  const targetUrl = event.notification.data.url || '/admin/appointments';
+  if (event.action === "close") return;
+
+  const targetUrl = event.notification.data?.url || '/admin/appointments';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Si hay una ventana abierta con la misma URL, enfócala
+      // Si hay una ventana abierta con la misma URL o en el panel admin, enfócala
       for (let client of windowClients) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
+        if ((client.url.includes(targetUrl) || client.url.includes('/admin')) && 'focus' in client) {
           return client.focus();
         }
       }
@@ -39,4 +48,12 @@ self.addEventListener('notificationclick', (event) => {
       }
     })
   );
+});
+
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(clients.claim());
 });

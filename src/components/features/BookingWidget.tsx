@@ -43,8 +43,8 @@ export function BookingWidget() {
           fetch("/api/services").then(res => res.json()),
           fetch("/api/barbers").then(res => res.json())
         ])
-        setServices(servicesRes)
-        setBarbers(barbersRes)
+        setServices(Array.isArray(servicesRes) ? servicesRes : [])
+        setBarbers(Array.isArray(barbersRes) ? barbersRes : [])
       } catch (err) {
         console.error("Error fetching data:", err)
         setError("Error cargando los datos. Por favor recarga la página.")

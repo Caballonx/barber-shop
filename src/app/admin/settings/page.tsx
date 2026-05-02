@@ -90,8 +90,8 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">Correo de Contacto</label>
                 <Input 
-                  value={settings.email}
-                  onChange={e => setSettings({...settings, email: e.target.value})}
+                  value={settings.contactEmail}
+                  onChange={e => setSettings({...settings, contactEmail: e.target.value})}
                   className="bg-black border-gray-800 focus:border-[#22c55e]/50"
                 />
               </div>
@@ -120,18 +120,16 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">Hora de Apertura</label>
                 <Input 
-                  type="time"
-                  value={settings.openingHour}
-                  onChange={e => setSettings({...settings, openingHour: e.target.value})}
+                  value={settings.openingTime}
+                  onChange={e => setSettings({...settings, openingTime: e.target.value})}
                   className="bg-black border-gray-800 focus:border-[#22c55e]/50"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">Hora de Cierre</label>
                 <Input 
-                  type="time"
-                  value={settings.closingHour}
-                  onChange={e => setSettings({...settings, closingHour: e.target.value})}
+                  value={settings.closingTime}
+                  onChange={e => setSettings({...settings, closingTime: e.target.value})}
                   className="bg-black border-gray-800 focus:border-[#22c55e]/50"
                 />
               </div>
@@ -154,8 +152,8 @@ export default function SettingsPage() {
               </div>
               <input 
                 type="checkbox" 
-                checked={settings.allowAutomaticConfirmation}
-                onChange={e => setSettings({...settings, allowAutomaticConfirmation: e.target.checked})}
+                checked={settings.autoConfirm}
+                onChange={e => setSettings({...settings, autoConfirm: e.target.checked})}
                 className="w-5 h-5 accent-[#22c55e]"
               />
             </div>

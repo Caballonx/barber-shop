@@ -1,3 +1,8 @@
+# Local ignores
+docker_installer.exe
+*.exe
+
+# Remote ignores
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies

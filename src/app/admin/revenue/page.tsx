@@ -46,7 +46,7 @@ export default function RevenuePage() {
     )
   }
 
-  const { dailyRevenue, categoryRevenue, summary } = data || {}
+  const { dailyRevenue, categoryRevenue, totalRevenue, completedCount, averageTicket } = data || {}
 
   return (
     <div className="space-y-6">
@@ -62,8 +62,8 @@ export default function RevenuePage() {
             <DollarSign className="w-4 h-4 text-[#22c55e]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">RD$ {summary?.totalMonth?.toLocaleString()}</div>
-            <p className="text-xs text-[#22c55e] mt-1">+{summary?.count} servicios completados</p>
+            <div className="text-2xl font-bold">RD$ {totalRevenue?.toLocaleString()}</div>
+            <p className="text-xs text-[#22c55e] mt-1">+{completedCount} servicios completados</p>
           </CardContent>
         </Card>
         <Card className="bg-[#111] border-[#22c55e]/20 text-white">
@@ -72,7 +72,7 @@ export default function RevenuePage() {
             <TrendingUp className="w-4 h-4 text-[#22c55e]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">RD$ {Math.round(summary?.avgTicket || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold">RD$ {averageTicket?.toLocaleString()}</div>
             <p className="text-xs text-gray-500 mt-1">Promedio por cliente</p>
           </CardContent>
         </Card>
@@ -97,13 +97,13 @@ export default function RevenuePage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="name" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `RD$${val}`} />
                 <Tooltip 
                   cursor={{fill: 'rgba(34, 197, 94, 0.05)'}}
                   contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '8px' }}
                 />
-                <Bar dataKey="ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="amount" fill="#22c55e" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

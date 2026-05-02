@@ -165,6 +165,37 @@ export default function BarbersPage() {
                         onChange={e => setEditForm({...editForm, specialty: e.target.value})}
                         className="bg-black border-gray-700 h-8 text-center text-xs"
                       />
+                      <div className="flex gap-1">
+                        <Input 
+                          value={editForm.startTime} 
+                          onChange={e => setEditForm({...editForm, startTime: e.target.value})}
+                          className="bg-black border-gray-700 h-8 text-center text-[10px]"
+                        />
+                        <Input 
+                          value={editForm.endTime} 
+                          onChange={e => setEditForm({...editForm, endTime: e.target.value})}
+                          className="bg-black border-gray-700 h-8 text-center text-[10px]"
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-1 justify-center pt-1">
+                        {["LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM"].map(day => (
+                          <button
+                            key={day}
+                            onClick={() => {
+                              const current = editForm.workDays || []
+                              const updated = current.includes(day) 
+                                ? current.filter((d: string) => d !== day)
+                                : [...current, day]
+                              setEditForm({...editForm, workDays: updated})
+                            }}
+                            className={`text-[8px] px-1 rounded ${
+                              editForm.workDays?.includes(day) ? "bg-[#22c55e] text-black" : "bg-gray-800 text-gray-400"
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                      </div>
                       <div className="flex justify-center gap-2 pt-2">
                         <button onClick={() => setEditingId(null)} className="p-1 text-gray-500 hover:text-white"><X className="w-4 h-4" /></button>
                         <button onClick={handleSave} className="p-1 text-[#22c55e] hover:text-green-400"><Save className="w-4 h-4" /></button>
