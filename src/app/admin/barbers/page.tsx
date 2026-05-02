@@ -4,6 +4,10 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Plus, Edit2, User, Save, X, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+
+const DAYS = ["LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM"]
+const FULL_DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 export default function BarbersPage() {
   const [barbers, setBarbers] = useState<any[]>([])
@@ -11,6 +15,7 @@ export default function BarbersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<any>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [selectedDays, setSelectedDays] = useState<string[]>(DAYS)
 
   const fetchBarbers = async () => {
     try {
@@ -30,7 +35,10 @@ export default function BarbersPage() {
 
   const handleEdit = (barber: any) => {
     setEditingId(barber.id)
-    setEditForm(barber)
+    setEditForm({
+      ...barber,
+      workDays: Array.isArray(barber.workDays) ? barber.workDays : []
+    })
   }
 
   const handleSave = async () => {
@@ -57,6 +65,7 @@ export default function BarbersPage() {
       specialty: formData.get("specialty"),
       startTime: formData.get("startTime"),
       endTime: formData.get("endTime"),
+      workDays: selectedDays,
     }
 
     try {
@@ -97,6 +106,30 @@ export default function BarbersPage() {
             <Input name="specialty" placeholder="Especialidad (Ej. Skin Fade)" required className="bg-black border-gray-800" />
             <Input name="startTime" type="text" placeholder="Entrada (09:00)" defaultValue="09:00" className="bg-black border-gray-800" />
             <Input name="endTime" type="text" placeholder="Salida (20:00)" defaultValue="20:00" className="bg-black border-gray-800" />
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase">Días de Trabajo</label>
+              <div className="flex flex-wrap gap-2">
+                {DAYS.map((day, idx) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDays(prev => 
+                        prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+                      )
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
+                      selectedDays.includes(day) 
+                        ? "bg-[#22c55e] text-black border-[#22c55e]" 
+                        : "bg-black text-gray-500 border-gray-800 hover:border-gray-600"
+                    )}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="md:col-span-2 flex justify-end gap-3 mt-2">
               <button type="button" onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-white px-4">Cancelar</button>
               <button type="submit" className="bg-[#22c55e] text-black px-6 py-2 rounded-md font-bold">Crear Perfil</button>
@@ -143,6 +176,21 @@ export default function BarbersPage() {
                       <p className="text-xs text-[#22c55e] mb-3">{barber.specialty}</p>
                       <div className="text-[10px] text-gray-500 bg-gray-900/50 py-1 rounded">
                         {barber.startTime} - {barber.endTime}
+                      </div>
+                      <div className="flex flex-wrap justify-center gap-1 mt-2">
+                        {DAYS.map(day => (
+                          <span 
+                            key={day}
+                            className={cn(
+                              "w-5 h-5 flex items-center justify-center rounded-[4px] text-[8px] font-bold border",
+                              barber.workDays?.includes(day)
+                                ? "bg-[#22c55e]/10 text-[#22c55e] border-[#22c55e]/20"
+                                : "bg-gray-900/30 text-gray-700 border-transparent"
+                            )}
+                          >
+                            {day[0]}
+                          </span>
+                        ))}
                       </div>
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => handleEdit(barber)} className="p-1 text-gray-500 hover:text-white"><Edit2 className="w-3 h-3" /></button>

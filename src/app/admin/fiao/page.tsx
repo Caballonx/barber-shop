@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Loader2, Plus, Receipt, User, Scissors, DollarSign, Trash2, CheckCircle2, Clock } from "lucide-react"
+import { Loader2, Plus, Receipt, User, Scissors, DollarSign, Trash2, CheckCircle2, Clock, MessageSquare } from "lucide-react"
 
 interface Debt {
   id: string
@@ -242,6 +242,15 @@ export default function FiaoPage() {
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
+                              <a 
+                                href={`https://wa.me/1${debt.notes?.match(/\d{10}/)?.[0] || ""}`} // Intenta extraer un tel de notas o simplemente link
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 hover:bg-blue-500/10 rounded-md transition-colors text-gray-400 hover:text-blue-500"
+                                title="Contactar cliente"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </a>
                             </div>
                           </td>
                         </tr>

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Check, X, Clock, Calendar as CalendarIcon, User } from "lucide-react"
+import { Loader2, Check, X, Clock, Calendar as CalendarIcon, User, MessageSquare, LayoutList, Calendar } from "lucide-react"
+import { AdminCalendar } from "@/components/features/admin/AdminCalendar"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -10,6 +11,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("ALL")
+  const [view, setView] = useState<"LIST" | "CALENDAR">("LIST")
 
   const fetchAppointments = async () => {
     setLoading(true)
@@ -52,31 +54,56 @@ export default function AppointmentsPage() {
           <p className="text-gray-400 mt-1">Administra todas las reservas de la barbería.</p>
         </div>
         
-        <div className="flex gap-2 bg-[#111] p-1 rounded-lg border border-gray-800">
-          {["ALL", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"].map(f => (
+        <div className="flex items-center gap-4">
+          <div className="flex gap-1 bg-[#111] p-1 rounded-lg border border-gray-800">
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                filter === f ? "bg-[#22c55e] text-black shadow-[0_0_10px_rgba(34,197,94,0.3)]" : "text-gray-400 hover:text-white"
+              onClick={() => setView("LIST")}
+              className={`p-2 rounded-md transition-all ${
+                view === "LIST" ? "bg-[#22c55e] text-black shadow-[0_0_10px_rgba(34,197,94,0.3)]" : "text-gray-400 hover:text-white"
               }`}
+              title="Vista Lista"
             >
-              {f === "ALL" ? "Todas" : f}
+              <LayoutList className="w-4 h-4" />
             </button>
-          ))}
+            <button
+              onClick={() => setView("CALENDAR")}
+              className={`p-2 rounded-md transition-all ${
+                view === "CALENDAR" ? "bg-[#22c55e] text-black shadow-[0_0_10px_rgba(34,197,94,0.3)]" : "text-gray-400 hover:text-white"
+              }`}
+              title="Vista Calendario"
+            >
+              <Calendar className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex gap-2 bg-[#111] p-1 rounded-lg border border-gray-800">
+            {["ALL", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  filter === f ? "bg-[#22c55e] text-black shadow-[0_0_10px_rgba(34,197,94,0.3)]" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                {f === "ALL" ? "Todas" : f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <Card className="bg-[#111111] border-[#22c55e]/20">
-        <CardHeader>
-          <CardTitle className="text-white">Listado de Reservas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 text-[#22c55e] animate-spin" />
-            </div>
-          ) : (
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 text-[#22c55e] animate-spin" />
+        </div>
+      ) : view === "CALENDAR" ? (
+        <AdminCalendar appointments={appointments} />
+      ) : (
+        <Card className="bg-[#111111] border-[#22c55e]/20 overflow-hidden">
+          <CardHeader className="border-b border-gray-800 bg-[#1a1a1a]/50">
+            <CardTitle className="text-white text-lg">Listado de Reservas</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-gray-300">
                 <thead className="text-xs text-gray-400 uppercase bg-[#1a1a1a] border-b border-[#22c55e]/20">
@@ -157,6 +184,15 @@ export default function AppointmentsPage() {
                               <Check className="w-4 h-4" />
                             </button>
                           )}
+                          <a 
+                            href={`https://wa.me/${apt.client.phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md hover:bg-blue-500 hover:text-white transition-all"
+                            title="Enviar WhatsApp"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </a>
                         </div>
                       </td>
                     </tr>
@@ -170,9 +206,9 @@ export default function AppointmentsPage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
