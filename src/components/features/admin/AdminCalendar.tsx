@@ -18,8 +18,10 @@ import { es } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, Scissors } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import { Appointment } from "@/types/appointments"
+
 interface AdminCalendarProps {
-  appointments: any[]
+  appointments: Appointment[]
 }
 
 export function AdminCalendar({ appointments }: AdminCalendarProps) {

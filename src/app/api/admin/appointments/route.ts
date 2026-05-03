@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { AppointmentStatus } from "@/generated/prisma"
 
 export async function GET(request: Request) {
   try {
@@ -7,7 +8,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status")
     
     const appointments = await prisma.appointment.findMany({
-      where: status ? { status: status as any } : {},
+      where: status && status !== "ALL" ? { status: status as AppointmentStatus } : {},
       include: {
         client: true,
         barber: true,

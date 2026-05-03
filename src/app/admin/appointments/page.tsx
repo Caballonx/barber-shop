@@ -7,8 +7,11 @@ import { AdminCalendar } from "@/components/features/admin/AdminCalendar"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
+import { Appointment } from "@/types/appointments"
+import { useMemo } from "react"
+
 export default function AppointmentsPage() {
-  const [appointments, setAppointments] = useState<any[]>([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("ALL")
   const [view, setView] = useState<"LIST" | "CALENDAR">("LIST")
@@ -16,8 +19,8 @@ export default function AppointmentsPage() {
   const fetchAppointments = async () => {
     setLoading(true)
     try {
-      const url = filter === "ALL" ? "/api/admin/appointments" : `/api/admin/appointments?status=${filter}`
-      const res = await fetch(url)
+      // Siempre traemos todas para permitir filtrado instantáneo en el cliente
+      const res = await fetch("/api/admin/appointments")
       const data = await res.json()
       setAppointments(data)
     } catch (err) {
@@ -29,7 +32,12 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchAppointments()
-  }, [filter])
+  }, []) // Solo al montar
+
+  const filteredAppointments = useMemo(() => {
+    if (filter === "ALL") return appointments
+    return appointments.filter(apt => apt.status === filter)
+  }, [appointments, filter])
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
@@ -39,7 +47,7 @@ export default function AppointmentsPage() {
         body: JSON.stringify({ id, status: newStatus })
       })
       if (res.ok) {
-        setAppointments(prev => prev.map(apt => apt.id === id ? { ...apt, status: newStatus } : apt))
+        setAppointments(prev => prev.map(apt => apt.id === id ? { ...apt, status: newStatus as any } : apt))
       }
     } catch (err) {
       console.error("Error updating status:", err)
@@ -97,7 +105,7 @@ export default function AppointmentsPage() {
           <Loader2 className="w-8 h-8 text-[#22c55e] animate-spin" />
         </div>
       ) : view === "CALENDAR" ? (
-        <AdminCalendar appointments={appointments} />
+        <AdminCalendar appointments={filteredAppointments} />
       ) : (
         <Card className="bg-[#111111] border-[#22c55e]/20 overflow-hidden">
           <CardHeader className="border-b border-gray-800 bg-[#1a1a1a]/50">
@@ -116,7 +124,7 @@ export default function AppointmentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {appointments.length > 0 ? appointments.map((apt) => (
+                  {filteredAppointments.length > 0 ? filteredAppointments.map((apt) => (
                     <tr key={apt.id} className="hover:bg-[#22c55e]/5 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex flex-col">
