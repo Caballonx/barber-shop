@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "FADE Barbershop | Tu Mejor Look",
   description: "Reserva tu cita fácil y rápido. Elige tu servicio, tu barbero y el horario que mejor te convenga.",
+  manifest: "/manifest.json",
 }
 
 export const viewport = {
