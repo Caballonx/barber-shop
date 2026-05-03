@@ -40,14 +40,18 @@ export function BookingWidget() {
     async function fetchData() {
       try {
         const [servicesRes, barbersRes] = await Promise.all([
-          fetch("/api/services").then(res => res.json()),
-          fetch("/api/barbers").then(res => res.json())
+          fetch("/api/services").then(res => res.json()).catch(() => ({ error: true })),
+          fetch("/api/barbers").then(res => res.json()).catch(() => ({ error: true }))
         ])
         setServices(Array.isArray(servicesRes) ? servicesRes : [])
         setBarbers(Array.isArray(barbersRes) ? barbersRes : [])
+        
+        if (!Array.isArray(servicesRes) || !Array.isArray(barbersRes)) {
+          setError("No se pudieron cargar los servicios. Verifica la conexión a la base de datos.")
+        }
       } catch (err) {
         console.error("Error fetching data:", err)
-        setError("Error cargando los datos. Por favor recarga la página.")
+        setError("Error de conexión. Asegúrate de configurar el archivo .env.local")
       } finally {
         setLoading(false)
       }
@@ -170,21 +174,27 @@ export function BookingWidget() {
                 <div>
                   <h2 className="text-xl font-bold mb-4">Elige tu Servicio</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {services.map(service => (
-                      <motion.div 
-                        key={service.id}
-                        whileHover={{ scale: 1.03, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedService(service)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${selectedService?.id === service.id ? 'border-[#22c55e] bg-[#22c55e]/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'border-gray-800 bg-[#111] hover:border-gray-600'}`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-semibold">{service.name}</h3>
-                          <span className="text-[#22c55e] font-bold text-lg">RD${service.price}</span>
-                        </div>
-                        <p className="text-sm text-gray-400 mt-1">{service.description || `${service.duration} mins`}</p>
-                      </motion.div>
-                    ))}
+                    {Array.isArray(services) && services.length > 0 ? (
+                      services.map(service => (
+                        <motion.div 
+                          key={service.id}
+                          whileHover={{ scale: 1.03, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedService(service)}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${selectedService?.id === service.id ? 'border-[#22c55e] bg-[#22c55e]/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'border-gray-800 bg-[#111] hover:border-gray-600'}`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-semibold">{service.name}</h3>
+                            <span className="text-[#22c55e] font-bold text-lg">RD${service.price}</span>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-1">{service.description || `${service.duration} mins`}</p>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="col-span-full py-10 text-center text-gray-500 bg-[#111] rounded-lg border border-dashed border-gray-800">
+                        No hay servicios disponibles actualmente.
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -192,25 +202,31 @@ export function BookingWidget() {
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
                     <h2 className="text-xl font-bold mb-4 mt-8">Elige a tu Barbero</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {barbers.map(barber => (
-                        <motion.div 
-                          key={barber.id}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedBarber(barber)}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors text-center ${selectedBarber?.id === barber.id ? 'border-[#22c55e] bg-[#22c55e]/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'border-gray-800 bg-[#111] hover:border-gray-600'}`}
-                        >
-                          <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full mb-3 overflow-hidden border border-gray-700">
-                            {barber.photoUrl ? (
-                              <img src={barber.photoUrl} alt={barber.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <User className="w-full h-full p-4 text-gray-400" />
-                            )}
-                          </div>
-                          <h3 className="font-semibold">{barber.name}</h3>
-                          <p className="text-xs text-gray-400 mt-1">{barber.specialty}</p>
-                        </motion.div>
-                      ))}
+                      {Array.isArray(barbers) && barbers.length > 0 ? (
+                        barbers.map(barber => (
+                          <motion.div 
+                            key={barber.id}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedBarber(barber)}
+                            className={`p-4 rounded-lg border-2 cursor-pointer transition-colors text-center ${selectedBarber?.id === barber.id ? 'border-[#22c55e] bg-[#22c55e]/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'border-gray-800 bg-[#111] hover:border-gray-600'}`}
+                          >
+                            <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full mb-3 overflow-hidden border border-gray-700">
+                              {barber.photoUrl ? (
+                                <img src={barber.photoUrl} alt={barber.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <User className="w-full h-full p-4 text-gray-400" />
+                              )}
+                            </div>
+                            <h3 className="font-semibold">{barber.name}</h3>
+                            <p className="text-xs text-gray-400 mt-1">{barber.specialty}</p>
+                          </motion.div>
+                        ))
+                      ) : (
+                        <div className="col-span-full py-8 text-center text-gray-500 bg-[#111] rounded-lg border border-dashed border-gray-800">
+                          Cargando barberos disponibles...
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
