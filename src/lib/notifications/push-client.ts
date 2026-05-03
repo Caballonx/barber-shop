@@ -29,9 +29,15 @@ export async function registerPushNotifications() {
   }
 
   try {
-    // Registrar service worker
-    const registration = await navigator.serviceWorker.register("/sw.js")
-    console.log("[Push Client] Service Worker registrado")
+    // Registrar service worker y esperar a que esté listo
+    const registration = await navigator.serviceWorker.register("/sw.js", {
+      scope: "/admin"
+    })
+    
+    // Asegurarse de que el Service Worker esté activo antes de continuar
+    await navigator.serviceWorker.ready
+    
+    console.log("[Push Client] Service Worker registrado y listo en /admin")
 
     // Verificar permiso
     const permission = await Notification.requestPermission()
@@ -44,7 +50,9 @@ export async function registerPushNotifications() {
     let subscription = await registration.pushManager.getSubscription()
 
     if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
+      // Re-verificar que el registro esté activo
+      const activeRegistration = await navigator.serviceWorker.ready;
+      subscription = await activeRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       })
