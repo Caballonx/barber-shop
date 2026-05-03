@@ -27,8 +27,8 @@ export async function sendNotification(subscription: any, payload: any) {
 }
 
 export async function notifyAdmins(payload: { title: string; body: string; url?: string }) {
-  const { getAllSubscriptions } = await import('@/lib/db/notifications');
-  const subscriptions = await getAllSubscriptions();
+  const { prisma } = await import('@/lib/db/prisma');
+  const subscriptions = await prisma.pushSubscription.findMany();
 
   const results = await Promise.allSettled(
     subscriptions.map(async (sub) => {
