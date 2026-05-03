@@ -50,16 +50,21 @@ export async function registerPushNotifications() {
       })
     }
 
-    // Enviar suscripción al servidor
-    const sub = subscription.toJSON()
-    await fetch("/api/push/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      // Enviar suscripción al servidor con el formato correcto
+      const sub = subscription.toJSON()
+      const payload = {
         endpoint: sub.endpoint,
-        keys: sub.keys,
-      }),
-    })
+        keys: {
+          p256dh: sub.keys?.p256dh,
+          auth: sub.keys?.auth,
+        },
+      }
+
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
 
     console.log("[Push Client] Suscripción push registrada exitosamente")
   } catch (error) {
