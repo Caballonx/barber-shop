@@ -12,7 +12,13 @@ import { Input } from "@/components/ui/input"
 
 type Step = 1 | 2 | 3 | 4
 
-export function BookingWidget() {
+export type BookingShop = {
+  id: string
+  slug: string
+  name: string
+}
+
+export function BookingWidget({ shop }: { shop: BookingShop }) {
   const [step, setStep] = useState<Step>(1)
   
   // Data state
@@ -40,8 +46,8 @@ export function BookingWidget() {
     async function fetchData() {
       try {
         const [servicesRes, barbersRes] = await Promise.all([
-          fetch("/api/services").then(res => res.json()).catch(() => ({ error: true })),
-          fetch("/api/barbers").then(res => res.json()).catch(() => ({ error: true }))
+          fetch(`/api/services?shop=${shop.slug}`).then(res => res.json()).catch(() => ({ error: true })),
+          fetch(`/api/barbers?shop=${shop.slug}`).then(res => res.json()).catch(() => ({ error: true }))
         ])
         setServices(Array.isArray(servicesRes) ? servicesRes : [])
         setBarbers(Array.isArray(barbersRes) ? barbersRes : [])
@@ -57,7 +63,7 @@ export function BookingWidget() {
       }
     }
     fetchData()
-  }, [])
+  }, [shop.slug])
 
   // Fetch availability when date, service or barber changes
   useEffect(() => {
@@ -66,7 +72,7 @@ export function BookingWidget() {
         setLoadingSlots(true)
         try {
           const formattedDate = format(selectedDate!, "yyyy-MM-dd")
-          const res = await fetch(`/api/availability?date=${formattedDate}&serviceId=${selectedService.id}&barberId=${selectedBarber.id}`)
+          const res = await fetch(`/api/availability?shop=${shop.slug}&date=${formattedDate}&serviceId=${selectedService.id}&barberId=${selectedBarber.id}`)
           if (!res.ok) throw new Error("Error")
           const data = await res.json()
           setAvailableSlots(data.availableSlots || [])
@@ -98,6 +104,7 @@ export function BookingWidget() {
     
     try {
       const payload = {
+        shopSlug: shop.slug,
         clientData,
         serviceId: selectedService.id,
         barberId: selectedBarber.id,

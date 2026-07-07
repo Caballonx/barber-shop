@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server"
-import { notifyAdmins } from "@/lib/notifications"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth/authOptions"
+import { sendPushToAdmins } from "@/lib/notifications/push"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function POST(request: Request) {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId } = auth
+
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-    }
-
     const body = await request.json()
     const { title, body: message, url } = body
 
@@ -18,7 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Título y mensaje son requeridos" }, { status: 400 })
     }
 
-    await notifyAdmins({ title, body: message, url })
+    await sendPushToAdmins(shopId, title, message, url)
 
     return NextResponse.json({ message: "Notificación enviada" })
   } catch (error) {

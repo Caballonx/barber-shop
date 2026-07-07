@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth/authOptions"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function POST(request: Request) {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId, userId } = auth
+
   try {
-    const session = await getServerSession(authOptions)
     const body = await request.json()
     const { endpoint, keys } = body
 
@@ -19,14 +21,16 @@ export async function POST(request: Request) {
       update: {
         p256dh: keys.p256dh,
         auth: keys.auth,
-        userId: session?.user?.id || null,
+        userId,
+        shopId,
         updatedAt: new Date(),
       },
       create: {
         endpoint,
         p256dh: keys.p256dh,
         auth: keys.auth,
-        userId: session?.user?.id || null,
+        userId,
+        shopId,
       },
     })
 

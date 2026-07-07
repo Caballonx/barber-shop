@@ -1,6 +1,6 @@
 {
-  "name": "FADE Barbershop",
-  "short_name": "FADE",
+  "name": "BarberSaaS",
+  "short_name": "BarberSaaS",
   "description": "Reserva tu cita fácil y rápido. Elige tu servicio, tu barbero y el horario que mejor te convenga.",
   "start_url": "/admin",
   "scope": "/admin",

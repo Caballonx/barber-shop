@@ -13,14 +13,14 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
  * Envía una notificación push a todos los admins suscritos.
  * No lanza error para no bloquear el flujo principal.
  */
-export async function sendPushToAdmins(title: string, body: string, url?: string) {
+export async function sendPushToAdmins(shopId: string, title: string, body: string, url?: string) {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
     console.warn("[Push] VAPID keys no configuradas. Notificación omitida.")
     return
   }
 
   try {
-    const subscriptions = await prisma.pushSubscription.findMany()
+    const subscriptions = await prisma.pushSubscription.findMany({ where: { shopId } })
 
     const payload = JSON.stringify({
       title,

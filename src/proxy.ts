@@ -21,9 +21,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // /super/* is only for the SaaS owner
+  if (pathname.startsWith("/super") && token.role !== "SUPER_ADMIN") {
+    return NextResponse.redirect(new URL("/admin", request.url))
+  }
+
+  // Shop admins land on their panel; super admins on theirs
+  if (pathname.startsWith("/admin") && token.role === "SUPER_ADMIN") {
+    return NextResponse.redirect(new URL("/super", request.url))
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/super/:path*"],
 }

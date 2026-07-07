@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameDay } from "date-fns"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function GET() {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId } = auth
+
   try {
     const now = new Date()
     const start = startOfMonth(now)
@@ -11,6 +16,7 @@ export async function GET() {
     // Obtener todas las citas completadas del mes actual
     const appointments = await prisma.appointment.findMany({
       where: {
+        shopId,
         status: "COMPLETED",
         date: {
           gte: start,
@@ -35,7 +41,7 @@ export async function GET() {
       const dayTotal = appointments
         .filter(app => isSameDay(new Date(app.date), day))
         .reduce((sum, app) => sum + app.price, 0)
-      
+
       return {
         date: format(day, "dd"),
         amount: dayTotal
@@ -48,7 +54,7 @@ export async function GET() {
       const cat = app.service.category || "General"
       categoryMap[cat] = (categoryMap[cat] || 0) + app.price
     })
-    
+
     const categoryRevenue = Object.entries(categoryMap).map(([name, value]) => ({
       name,
       value

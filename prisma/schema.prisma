@@ -7,8 +7,44 @@ datasource db {
   provider  = "postgresql"
 }
 
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+}
+
+enum Role {
+  SUPER_ADMIN
+  SHOP_ADMIN
+}
+
+model Shop {
+  id                 String             @id @default(cuid())
+  slug               String             @unique
+  name               String
+  contactEmail       String?
+  contactPhone       String?
+  address            String?
+  openingTime        String             @default("09:00")
+  closingTime        String             @default("20:00")
+  autoConfirm        Boolean            @default(true)
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  services           Service[]
+  barbers            Barber[]
+  clients            Client[]
+  appointments       Appointment[]
+  blockedSlots       BlockedSlot[]
+  revenues           Revenue[]
+  debts              Debt[]
+  users              User[]
+  pushSubscriptions  PushSubscription[]
+}
+
 model Service {
   id           String        @id @default(cuid())
+  shopId       String
   name         String
   description  String?
   price        Int
@@ -18,11 +54,15 @@ model Service {
   isActive     Boolean       @default(true)
   order        Int           @default(0)
   createdAt    DateTime      @default(now())
+  shop         Shop          @relation(fields: [shopId], references: [id])
   appointments Appointment[]
+
+  @@index([shopId])
 }
 
 model Barber {
   id           String        @id @default(cuid())
+  shopId       String
   name         String
   specialty    String
   bio          String?
@@ -32,21 +72,30 @@ model Barber {
   startTime    String
   endTime      String
   createdAt    DateTime      @default(now())
+  shop         Shop          @relation(fields: [shopId], references: [id])
   appointments Appointment[]
   blockedSlots BlockedSlot[]
+
+  @@index([shopId])
 }
 
 model Client {
   id           String        @id @default(cuid())
+  shopId       String
   name         String
   phone        String
   email        String?
   createdAt    DateTime      @default(now())
+  shop         Shop          @relation(fields: [shopId], references: [id])
   appointments Appointment[]
+
+  @@unique([shopId, phone])
+  @@index([shopId])
 }
 
 model Appointment {
   id            String            @id @default(cuid())
+  shopId        String
   clientId      String
   barberId      String
   serviceId     String
@@ -58,25 +107,33 @@ model Appointment {
   price         Int
   paymentMethod String?
   createdAt     DateTime          @default(now())
+  shop          Shop              @relation(fields: [shopId], references: [id])
   barber        Barber            @relation(fields: [barberId], references: [id])
   client        Client            @relation(fields: [clientId], references: [id])
   service       Service           @relation(fields: [serviceId], references: [id])
   revenues      Revenue[]
+
+  @@index([shopId])
 }
 
 model BlockedSlot {
   id        String   @id @default(cuid())
+  shopId    String
   barberId  String
   date      DateTime
   startTime String
   endTime   String
   reason    String?
   createdAt DateTime @default(now())
+  shop      Shop     @relation(fields: [shopId], references: [id])
   barber    Barber   @relation(fields: [barberId], references: [id])
+
+  @@index([shopId])
 }
 
 model Revenue {
   id            String      @id @default(cuid())
+  shopId        String
   appointmentId String
   amount        Int
   date          DateTime
@@ -84,19 +141,27 @@ model Revenue {
   serviceId     String
   paymentMethod String
   createdAt     DateTime    @default(now())
+  shop          Shop        @relation(fields: [shopId], references: [id])
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@index([shopId])
 }
 
 model User {
-  id       String @id @default(cuid())
-  email    String @unique
+  id       String  @id @default(cuid())
+  email    String  @unique
   password String
   name     String
-  role     String
+  role     Role    @default(SHOP_ADMIN)
+  shopId   String?
+  shop     Shop?   @relation(fields: [shopId], references: [id])
+
+  @@index([shopId])
 }
 
 model Debt {
   id          String   @id @default(cuid())
+  shopId      String
   clientName  String
   serviceName String
   amount      Int
@@ -104,18 +169,9 @@ model Debt {
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
+  shop        Shop     @relation(fields: [shopId], references: [id])
 
-
-model ShopConfig {
-  id                String  @id @default("default")
-  shopName          String  @default("FADE Barbershop")
-  contactEmail      String  @default("contacto@fadebarbershop.com")
-  address           String  @default("Winston Churchill 1206, Piantini")
-  openingTime       String  @default("09:00")
-  closingTime       String  @default("20:00")
-  autoConfirm       Boolean @default(true)
-  updatedAt         DateTime @updatedAt
+  @@index([shopId])
 }
 
 enum AppointmentStatus {
@@ -128,12 +184,15 @@ enum AppointmentStatus {
 
 model PushSubscription {
   id        String   @id @default(cuid())
+  shopId    String
   endpoint  String   @unique
   p256dh    String
   auth      String
   userId    String?  @map("user_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  shop      Shop     @relation(fields: [shopId], references: [id])
 
+  @@index([shopId])
   @@map("push_subscriptions")
 }

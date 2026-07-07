@@ -9,6 +9,7 @@ const fromNumber = process.env.TWILIO_WHATSAPP_FROM // formato: whatsapp:+141552
  * No lanza error para no bloquear la creación de la cita si falla.
  */
 export async function sendWhatsAppConfirmation({
+  shopName,
   clientPhone,
   clientName,
   barberName,
@@ -17,6 +18,7 @@ export async function sendWhatsAppConfirmation({
   time,
   price,
 }: {
+  shopName: string
   clientPhone: string
   clientName: string
   barberName: string
@@ -43,7 +45,7 @@ export async function sendWhatsAppConfirmation({
     const message = await client.messages.create({
       from: fromNumber,
       to: `whatsapp:${phone}`,
-      body: `✅ *FADE Barbershop* - Cita Confirmada\n\n` +
+      body: `✅ *${shopName}* - Cita Confirmada\n\n` +
         `Hola *${clientName}*! Tu cita ha sido registrada:\n\n` +
         `💈 *Servicio:* ${serviceName}\n` +
         `👤 *Barbero:* ${barberName}\n` +

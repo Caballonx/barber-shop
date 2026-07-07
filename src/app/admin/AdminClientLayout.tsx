@@ -33,13 +33,42 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [shopName, setShopName] = useState("")
+  const [suspended, setSuspended] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       registerPushNotifications()
     }
+    fetch("/api/admin/settings")
+      .then(async (res) => {
+        if (res.status === 403) {
+          const data = await res.json().catch(() => null)
+          if (data?.error === "SUSPENDED") setSuspended(true)
+          return null
+        }
+        return res.ok ? res.json() : null
+      })
+      .then((data) => {
+        if (data?.shopName) setShopName(data.shopName)
+      })
+      .catch(() => {})
   }, [])
+
+  if (suspended) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-center px-4 text-white">
+        <span className="text-5xl mb-6">💈</span>
+        <h1 className="text-2xl font-bold mb-4">Cuenta suspendida</h1>
+        <p className="text-gray-400 max-w-md mb-8">
+          El acceso al panel está suspendido temporalmente. Contacta al proveedor del
+          sistema para reactivar tu suscripción.
+        </p>
+        <LogoutButton />
+      </div>
+    )
+  }
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin"
@@ -56,7 +85,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <Scissors className="w-5 h-5 text-black" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">
-              FADE<span className="text-[#22c55e] transition-colors group-hover:text-[#22c55e]/80">ADMIN</span>
+              {shopName || "Mi Barbería"}<span className="text-[#22c55e] transition-colors group-hover:text-[#22c55e]/80"></span>
             </span>
           </Link>
         </div>
@@ -117,7 +146,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       >
         <div className="h-20 flex items-center justify-between px-8 border-b border-white/5">
           <span className="text-xl font-bold tracking-tight text-white">
-            FADE<span className="text-[#22c55e]">ADMIN</span>
+            {shopName || "Mi Barbería"}
           </span>
           <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-gray-400 hover:text-white">
             <X className="w-6 h-6" />
@@ -164,7 +193,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Menu className="w-6 h-6" />
           </button>
           <span className="text-xl font-bold tracking-tight text-white">
-            FADE<span className="text-[#22c55e]">ADMIN</span>
+            {shopName || "Mi Barbería"}
           </span>
           <NotificationToggle isMobile />
         </header>
