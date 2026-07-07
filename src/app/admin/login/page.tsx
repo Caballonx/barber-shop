@@ -40,7 +40,7 @@ export default function AdminLogin() {
             <Scissors className="w-8 h-8 text-[#22c55e]" />
           </div>
           <h1 className="text-2xl font-bold tracking-wider">
-            FADE<span className="text-[#22c55e]">ADMIN</span>
+            BARBER<span className="text-[#22c55e]">ADMIN</span>
           </h1>
           <p className="text-gray-400 mt-2">Inicia sesión para gestionar la barbería</p>
         </div>

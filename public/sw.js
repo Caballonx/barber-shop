@@ -1,4 +1,4 @@
-// Service Worker para FADE Barbershop
+// Service Worker para BarberSaaS
 // Maneja notificaciones push y cache para PWA
 
 self.addEventListener('push', (event) => {
@@ -6,7 +6,7 @@ self.addEventListener('push', (event) => {
 
   try {
     const data = event.data.json();
-    const title = data.title || 'FADE Barbershop 💈';
+    const title = data.title || 'BarberSaaS 💈';
     const options = {
       body: data.body || 'Tienes una nueva notificación',
       icon: data.icon || '/icon-192x192.png',

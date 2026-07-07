@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
 import { parse, addMinutes, isBefore, isAfter, format, isEqual, startOfDay, endOfDay, getDay } from "date-fns"
+import { getShopBySlug } from "@/lib/shops"
 
 // Helper: Convierte un día numérico a cadena (0 = DOM, 1 = LUN, etc.)
 const dayToString: Record<number, string> = {
@@ -18,13 +19,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 })
     }
 
+    const shop = await getShopBySlug(searchParams.get("shop") ?? "")
+    if (!shop) {
+      return NextResponse.json({ error: "Tienda no encontrada" }, { status: 404 })
+    }
+    if (shop.subscriptionStatus === "SUSPENDED") {
+      return NextResponse.json({ error: "SUSPENDED" }, { status: 403 })
+    }
+
     const date = new Date(dateParam)
     const dayName = dayToString[getDay(date)]
 
     // Obtener datos del barbero y servicio en paralelo
     const [barber, service] = await Promise.all([
-      prisma.barber.findUnique({ where: { id: barberId } }),
-      prisma.service.findUnique({ where: { id: serviceId } })
+      prisma.barber.findFirst({ where: { id: barberId, shopId: shop.id } }),
+      prisma.service.findFirst({ where: { id: serviceId, shopId: shop.id } })
     ])
 
     if (!barber || !service) {

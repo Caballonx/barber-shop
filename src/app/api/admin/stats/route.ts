@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, format, eachDayOfInterval } from "date-fns"
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function GET() {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId } = auth
+
   try {
     const today = new Date()
     const startOfToday = startOfDay(today)
@@ -11,21 +16,21 @@ export async function GET() {
     const endOfCurrentWeek = endOfWeek(today, { weekStartsOn: 1 })
 
     // 1. Stats for cards
-    const [citasHoy, ingresosHoy, nuevosClientes, totalCitas] = await Promise.all([
+    const [citasHoy, ingresosHoy, nuevosClientes] = await Promise.all([
       prisma.appointment.count({
-        where: { date: { gte: startOfToday, lte: endOfToday } }
+        where: { shopId, date: { gte: startOfToday, lte: endOfToday } }
       }),
       prisma.appointment.aggregate({
-        where: { 
+        where: {
+          shopId,
           date: { gte: startOfToday, lte: endOfToday },
           status: { in: ["CONFIRMED", "COMPLETED"] }
         },
         _sum: { price: true }
       }),
       prisma.client.count({
-        where: { createdAt: { gte: startOfCurrentWeek } }
+        where: { shopId, createdAt: { gte: startOfCurrentWeek } }
       }),
-      prisma.appointment.count()
     ])
 
     // 2. Weekly revenue chart
@@ -40,12 +45,13 @@ export async function GET() {
         const dayEnd = endOfDay(day)
         const revenue = await prisma.appointment.aggregate({
           where: {
+            shopId,
             date: { gte: dayStart, lte: dayEnd },
             status: { in: ["CONFIRMED", "COMPLETED"] }
           },
           _sum: { price: true }
         })
-        
+
         const dayNames = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
         return {
           name: dayNames[day.getDay()],
@@ -57,11 +63,12 @@ export async function GET() {
     // 3. Service distribution
     const serviceDistribution = await prisma.appointment.groupBy({
       by: ['serviceId'],
+      where: { shopId },
       _count: { id: true },
     })
 
     const services = await prisma.service.findMany({
-      where: { id: { in: serviceDistribution.map(s => s.serviceId) } }
+      where: { shopId, id: { in: serviceDistribution.map(s => s.serviceId) } }
     })
 
     const pieData = serviceDistribution.map(item => {
@@ -75,6 +82,7 @@ export async function GET() {
     // 4. Today's appointments
     const todayAppointments = await prisma.appointment.findMany({
       where: {
+        shopId,
         date: { gte: startOfToday, lte: endOfToday }
       },
       include: {

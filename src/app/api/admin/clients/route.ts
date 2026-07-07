@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function GET() {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId } = auth
+
   try {
     const clients = await prisma.client.findMany({
+      where: { shopId },
       include: {
         _count: {
           select: { appointments: true }

@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { requireShopAdmin } from "@/lib/auth/guards"
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireShopAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { shopId } = auth
+
   try {
     const { id } = await params
     const body = await request.json()
@@ -12,6 +17,11 @@ export async function PATCH(
 
     if (!status) {
       return NextResponse.json({ error: "Estado es requerido" }, { status: 400 })
+    }
+
+    const existing = await prisma.appointment.findFirst({ where: { id, shopId } })
+    if (!existing) {
+      return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 })
     }
 
     const updatedAppointment = await prisma.appointment.update({
